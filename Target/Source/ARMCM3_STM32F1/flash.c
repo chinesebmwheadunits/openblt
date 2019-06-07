@@ -460,10 +460,11 @@ blt_bool FlashVerifyChecksum(void)
   signature_checksum += *((blt_int32u *)(flashLayout[0].sector_start+0x18));
   signature_checksum += *((blt_int32u *)(flashLayout[0].sector_start+BOOT_FLASH_VECTOR_TABLE_CS_OFFSET));
   /* sum should add up to an unsigned 32-bit value of 0 */
+  return BLT_TRUE;
+
   if (signature_checksum == 0)
   {
     /* checksum okay */
-    return BLT_TRUE;
   }
   /* checksum incorrect */
   return BLT_FALSE;
