@@ -56,6 +56,9 @@
 #elif (BOOT_COM_UART_CHANNEL_INDEX == 2)
 /** \brief Set UART base address to USART3. */
 #define USART_CHANNEL   USART3
+#elif (BOOT_COM_UART_CHANNEL_INDEX == 3)
+/** \brief Set UART base address to UART4. */
+#define USART_CHANNEL   UART4
 #endif
 
 
@@ -73,14 +76,15 @@ static void     UartTransmitByte(blt_int8u data);
 ****************************************************************************************/
 void UartInit(void)
 {
-  LL_USART_InitTypeDef USART_InitStruct;
+  LL_USART_InitTypeDef USART_InitStruct = {0};
 
   /* the current implementation supports USART1 - USART5. throw an assertion error in
    * case a different UART channel is configured.
    */
   ASSERT_CT((BOOT_COM_UART_CHANNEL_INDEX == 0) ||
             (BOOT_COM_UART_CHANNEL_INDEX == 1) ||
-            (BOOT_COM_UART_CHANNEL_INDEX == 2));
+            (BOOT_COM_UART_CHANNEL_INDEX == 2) ||
+            (BOOT_COM_UART_CHANNEL_INDEX == 3));
 
   /* configure UART peripheral */
   USART_InitStruct.BaudRate = BOOT_COM_UART_BAUDRATE;
@@ -93,6 +97,7 @@ void UartInit(void)
   LL_USART_Init(USART_CHANNEL, &USART_InitStruct);
   LL_USART_ConfigAsyncMode(USART_CHANNEL);
   LL_USART_Enable(USART_CHANNEL);
+
 } /*** end of UartInit ***/
 
 

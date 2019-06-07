@@ -46,7 +46,7 @@
 /** \brief Frequency of the external crystal oscillator. */
 #define BOOT_CPU_XTAL_SPEED_KHZ          (8000)
 /** \brief Desired system speed. */
-#define BOOT_CPU_SYSTEM_SPEED_KHZ        (72000)
+#define BOOT_CPU_SYSTEM_SPEED_KHZ        (48000)
 /** \brief Motorola or Intel style byte ordering. */
 #define BOOT_CPU_BYTE_ORDER_MOTOROLA     (0)
 /** \brief Enable/disable hook function call right before user program start. */
@@ -67,13 +67,13 @@
 /** \brief Enable/disable UART transport layer. */
 #define BOOT_COM_UART_ENABLE            (1)
 /** \brief Configure the desired communication speed. */
-#define BOOT_COM_UART_BAUDRATE          (57600)
+#define BOOT_COM_UART_BAUDRATE          (115200)
 /** \brief Configure number of bytes in the target->host data packet. */
 #define BOOT_COM_UART_TX_MAX_DATA       (64)
 /** \brief Configure number of bytes in the host->target data packet. */
 #define BOOT_COM_UART_RX_MAX_DATA       (64)
 /** \brief Select the desired UART peripheral as a zero based index. */
-#define BOOT_COM_UART_CHANNEL_INDEX     (1)
+#define BOOT_COM_UART_CHANNEL_INDEX     (3)
 
 
 /****************************************************************************************
@@ -118,7 +118,7 @@
  *         a different checksum location, because this one is added at the end of the
  *         user program's vector table.
  */
-#define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET (0x10c)
+#define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET (0x150)
 /** \brief Enable support for a custom flash layout table. It is located in
  *         flash_layout.c. This was done because the default flashLayout[] table
  *         in the bootloader's core has more flash memory reserved for the bootloader

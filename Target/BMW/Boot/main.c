@@ -31,6 +31,7 @@
 ****************************************************************************************/
 #include "boot.h"                                /* bootloader generic header          */
 #include "stm32f1xx.h"                           /* STM32 registers and drivers        */
+#include "stm32f1xx_ll_cortex.h"                 /* STM32 LL Cortex header             */
 #include "stm32f1xx_ll_rcc.h"                    /* STM32 LL RCC header                */
 #include "stm32f1xx_ll_bus.h"                    /* STM32 LL BUS header                */
 #include "stm32f1xx_ll_system.h"                 /* STM32 LL SYSTEM header             */
@@ -97,42 +98,42 @@ static void Init(void)
 static void SystemClock_Config(void)
 {
   /* Set flash latency. */
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
-  if (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2)
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
+
+  if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_1)
   {
     /* Error setting flash latency. */
     ASSERT_RT(BLT_FALSE);
   }
-
-  /* Enable the HSE clock. */
-  LL_RCC_HSE_EnableBypass();
   LL_RCC_HSE_Enable();
-  /* Wait till HSE is ready. */
-  while (LL_RCC_HSE_IsReady() != 1)
-  {
-    ;
-  }
 
-  /* Configure and enable the PLL. */
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_9);
+   /* Wait till HSE is ready */
+  while(LL_RCC_HSE_IsReady() != 1)
+  {
+
+  }
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_6);
   LL_RCC_PLL_Enable();
 
-  /* Wait till PLL is ready. */
-  while (LL_RCC_PLL_IsReady() != 1)
+   /* Wait till PLL is ready */
+  while(LL_RCC_PLL_IsReady() != 1)
   {
-    ;
+
   }
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
-  /* Wait till System clock is ready. */
-  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+   /* Wait till System clock is ready */
+  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
   {
-    ;
+
   }
+
   /* Update the system clock speed setting. */
+  LL_Init1msTick(BOOT_CPU_SYSTEM_SPEED_KHZ * 1000u);
+  LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(BOOT_CPU_SYSTEM_SPEED_KHZ * 1000u);
 } /*** end of SystemClock_Config ***/
 
@@ -146,45 +147,38 @@ static void SystemClock_Config(void)
 ****************************************************************************************/
 void HAL_MspInit(void)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* AFIO and PWR clock enable. */
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
   /* GPIO ports clock enable. */
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOC);
 
 #if (BOOT_COM_UART_ENABLE > 0)
-  /* UART clock enable. */
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
+  /* UART clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
 #endif
 
-  /* Configure GPIO pin for the LED. */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5);
 
-  /* Configure GPIO pin for (optional) backdoor entry input. */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_13;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
-  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 #if (BOOT_COM_UART_ENABLE > 0)
-  /* UART TX and RX GPIO pin configuration. */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
+  /**UART4 GPIO Configuration
+  PC10   ------> UART4_TX
+  PC11   ------> UART4_RX
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_3;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_11;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 #endif
+
 } /*** end of HAL_MspInit ***/
 
 
@@ -203,12 +197,11 @@ void HAL_MspDeInit(void)
 
 #if (BOOT_COM_UART_ENABLE > 0)
   /* UART clock disable. */
-  LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_USART2);
+  LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART4);
 #endif
 
   /* GPIO ports clock disable. */
   LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_GPIOC);
-  LL_APB2_GRP1_DisableClock(LL_APB2_GRP1_PERIPH_GPIOA);
 
   /* AFIO and PWR clock disable. */
   LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_PWR);
