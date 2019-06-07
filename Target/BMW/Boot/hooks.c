@@ -30,7 +30,6 @@
 * Include files
 ****************************************************************************************/
 #include "boot.h"                                /* bootloader generic header          */
-#include "led.h"                                 /* LED driver header                  */
 #include "stm32f1xx.h"                           /* STM32 registers and drivers        */
 #include "stm32f1xx_ll_gpio.h"                   /* STM32 LL GPIO header               */
 
@@ -90,9 +89,6 @@ blt_bool CpuUserProgramStartHook(void)
     return BLT_FALSE;
   }
 
-  /* clean up the LED driver */
-  LedBlinkExit();
-
   /* okay to start the user program */
   return BLT_TRUE;
 } /*** end of CpuUserProgramStartHook ***/
@@ -116,7 +112,7 @@ void CopInitHook(void)
   /* this function is called upon initialization. might as well use it to initialize
    * the LED driver. It is kind of a visual watchdog anyways.
    */
-  LedBlinkInit(100);
+
 } /*** end of CopInitHook ***/
 
 
@@ -135,7 +131,7 @@ void CopServiceHook(void)
    * a blink interval to be skipped. this function is also called during such operations,
    * so no blink intervals will be skipped when calling the LED blink task here.
    */
-  LedBlinkTask();
+
 } /*** end of CopServiceHook ***/
 #endif /* BOOT_COP_HOOKS_ENABLE > 0 */
 

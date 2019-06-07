@@ -193,7 +193,6 @@ void HAL_MspDeInit(void)
 {
   /* Deinit used GPIOs. */
   LL_GPIO_DeInit(GPIOC);
-  LL_GPIO_DeInit(GPIOA);
 
 #if (BOOT_COM_UART_ENABLE > 0)
   /* UART clock disable. */
